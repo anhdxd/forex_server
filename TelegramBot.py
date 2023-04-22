@@ -82,7 +82,7 @@ def thread_sendnotify(bot):
   from pandas import DataFrame
   try:
 
-    #global dict_price_rt
+    global dict_price_rt
     
     #in_bot = Updater.bot(bot)
     #from globals_var import dict_price_rt, lst_symb_map, dic_syb_db_map
@@ -95,9 +95,9 @@ def thread_sendnotify(bot):
       # event được set có nghĩa là thứ 7 chủ nhật
       if event_breaktime.is_set():
         #print("stop")
-        time.sleep(8*3600)
+        time.sleep(gv.break_time)
         continue
-
+      #print(df_notify)
       time.sleep(0.5)
       reload_db = False
       #print(gv.dict_price_rt)
@@ -105,6 +105,7 @@ def thread_sendnotify(bot):
       for key, value in dict_price_rt.items():
           if key in df_notify['symbol'].values:
               # Nếu giá trị lệch 0.01% với giá trị trong db thì xóa
+              #print(f"price:{df_notify[df_notify['symbol'] == key]['price'].values}" )
               cond = abs(df_notify[df_notify['symbol'] == key]['price'].values - value) <= (value*0.02/100)
               #print(cond)
               if cond.any():
@@ -127,18 +128,20 @@ def thread_sendnotify(bot):
 
 def thread_checktime():
   global event_breaktime
-  global dict_price_rt
+  global event_reloadDB
   while 1:
     #print(datetime.datetime.now().weekday())
     now = datetime.now(tz=pytz.timezone('Asia/Ho_Chi_Minh'))
     print(now.weekday())
     if now.weekday() == 5 or now.weekday() == 6:
       event_breaktime.set()
-      dict_price_rt = {key: 0 for key in gv.lst_symbol_oanda}
+      #dict_price_rt = {key: 0 for key in gv.lst_symbol_oanda}
     else:
-      event_breaktime.clear()
-      
-    time.sleep(6*3600)
+        event_breaktime.clear()
+        #event_reloadDB.is_set()
+
+    time.sleep(gv.break_time)
+    
 def main():
   #thread check time break
   thread_time = threading.Thread(target=thread_checktime)

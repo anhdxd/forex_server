@@ -9,3 +9,4 @@ lst_symb_map = {'gu': 'OANDA:GBP_USD', 'xu': 'OANDA:XAU_USD', 'uc': 'OANDA:USD_C
 dict_price_rt = {key: 0 for key in lst_symbol_oanda} # real time candle globals
 chatid = 1042979764
 event_breaktime = threading.Event()
+break_time = 6*3600

@@ -5,7 +5,7 @@
 # print(finnhub_client.forex_symbols('OANDA'))
 import websocket
 import json
-from globals_var import lst_symbol_oanda, finnhub_token, dict_price_rt, event_breaktime
+from globals_var import lst_symbol_oanda, finnhub_token, dict_price_rt, event_breaktime, break_time
 from datetime import datetime
 from pytz import timezone
 
@@ -46,12 +46,15 @@ def on_open(ws):
 
 def main_socket():
     global event_breaktime
+    global dict_price_rt
     try:
         import time
         while 1:
             if event_breaktime.is_set():
                 print("stop")
-                time.sleep(8*3600)
+                for symbol in dict_price_rt.keys():
+                    dict_price_rt[symbol] = 0
+                time.sleep(break_time)#(6*3600)
                 continue
 
             ws = websocket.WebSocketApp(f"wss://ws.finnhub.io?token={finnhub_token}",
