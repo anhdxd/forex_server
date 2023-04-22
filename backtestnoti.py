@@ -84,13 +84,14 @@ def save_img_from_word(filename, folder_save_img = 'images'):
   from shutil import rmtree
   if os.path.exists(folder_save_img):
     rmtree(folder_save_img)
-
+  
+  from docx2txt import process
   # Create folder if not exists
   if not os.path.exists(folder_save_img):
     os.makedirs(folder_save_img)
 
   # Save images from word file
-  from docx2txt import process
+  
   text = process(filename, folder_save_img)
 
   return
@@ -171,12 +172,14 @@ def schedule_notify(bot):
     try:
       if event_changeword.is_set():
         # Read file docx if exists
+        event_changeword.clear()
         if os.path.exists(docx_name):
+          print("Reading docx...")
           save_img_from_word(docx_name)
-          event_changeword.clear()
         else:
           bot.send_message(chat_id=chat_id, text="Không tìm thấy file docx!")
-          time.sleep(wait_time)
+          event_changeword.wait(wait_time)
+          continue
 
       # Count img
       numof_img = count_files('images')
@@ -198,10 +201,14 @@ def schedule_notify(bot):
         bot.send_message(chat_id=chat_id, text="Chưa đủ hình ảnh!")
       
       # Time sleep
-      time.sleep(wait_time)
+      print(f"Sleeping {wait_time} seconds...")
+      event_changeword.wait(wait_time)
+
     except Exception as e:
       bot.send_message(chat_id=chat_id, text="Exception: " + str(e))
       time.sleep(wait_time)
+
+
 
 def main():
   token = "6179912911:AAGMg3od1lNvVQunmpyWRkUOe77mkjNWa1s" # anhdz_fxexp_bot
@@ -217,6 +224,7 @@ def main():
   dispatcher.add_handler(MessageHandler(Filters.document, docx_handler))
 
   updater.start_polling()
+  print("Bot is running...")
 
   # thread send notify
   thread = threading.Thread(target=schedule_notify, args=(updater.bot,))
